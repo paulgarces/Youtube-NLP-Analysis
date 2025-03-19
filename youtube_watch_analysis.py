@@ -76,11 +76,11 @@ path = "watch-history.json"
 with open(path, "r", encoding="utf-8") as f:
     data = json.load(f)
 
-# Define custom stopwords to remove irrelevant words
+# Define custom stopwords - REDUCED list keeping important signal words
 custom_stopwords = set(stopwords.words('english')).union({
     "vs", "video", "official", "trailer", "new", "top", "best", 
     "moments", "ultimate", "ft", "watch", "watched", 
-    "clips", "part", "shorts", "full", "complete",
+    "part", "shorts", "full", "complete",
     "original", "official", "hd", "4k", "short", "clip", "compilation"
 })
 
@@ -88,7 +88,9 @@ custom_stopwords = set(stopwords.words('english')).union({
 words_to_keep = {
     "highlights", "music", "audio", "episode", "funny", 
     "gaming", "game", "live", "review", "tutorial", "how", 
-    "show", "match", "tour", "house", "home", "apartment"
+    "show", "match", "tour", "house", "home", "apartment",
+    "dance", "choreography", "song", "musical", "concert",
+    "sports", "football", "soccer", "basketball", "nba", "nfl"
 }
 
 # Remove any words_to_keep from stopwords
@@ -106,39 +108,65 @@ for entry in data:
     if title.startswith("https://") or title == "":
         continue
     original_titles.append(title)
-    # Remove special characters and stopwords
+    # Remove special characters and stopwords but keep important signal words
     title_cleaned = " ".join([word.lower() for word in re.sub(r"[^a-zA-Z0-9 ]", "", title).split() if word.lower() not in custom_stopwords])
     titles.append(title_cleaned)
     
 print(f"Total valid videos: {len(titles)}")
 print("Sample Titles:", original_titles[:5])
+print("Sample Cleaned Titles:", titles[:5])
 
 # Create hybrid embeddings (SBERT + TF-IDF)
 print("\nGenerating embeddings...")
 sbert_model = SentenceTransformer("all-MiniLM-L6-v2")
 sbert_embeddings = sbert_model.encode(titles, convert_to_numpy=True)
 
-tfidf_vectorizer = TfidfVectorizer(max_features=1000)
+# Use TF-IDF with bigrams to capture phrases better
+tfidf_vectorizer = TfidfVectorizer(max_features=1000, ngram_range=(1, 2))
 tfidf_matrix = tfidf_vectorizer.fit_transform(titles).toarray()
 
-# Combine SBERT + TF-IDF
-X = np.hstack((sbert_embeddings * 0.7, tfidf_matrix * 0.3))  # Weight SBERT higher
+# Combine SBERT + TF-IDF with weighted importance
+X = np.hstack((sbert_embeddings * 0.8, tfidf_matrix * 0.2))  # Weight SBERT higher
 
 # Normalize embeddings
 scaler = StandardScaler()
 X_scaled = scaler.fit_transform(X)
 
-# Apply Agglomerative Clustering
-num_clusters = 12  # Adjust number of clusters as needed
+# Apply Agglomerative Clustering - REDUCED to 8 clusters
+num_clusters = 8  # Reduced from 12 to avoid fragmentation
 agglo = AgglomerativeClustering(n_clusters=num_clusters)
 clusters = agglo.fit_predict(X_scaled)
 
 # Store results in a DataFrame
 df = pd.DataFrame({"Original_Title": original_titles, "Cleaned_Title": titles, "Cluster": clusters})
 
-# Load pre-trained word vectors (for better word similarity)
+# Count cluster sizes
+cluster_sizes = df["Cluster"].value_counts().sort_index()
+print("\nInitial Cluster Sizes:")
+for cluster, size in cluster_sizes.items():
+    print(f"Cluster {cluster}: {size} videos")
+
+# Load pre-trained word vectors
 print("Loading word vectors...")
 word_vectors = api.load("glove-wiki-gigaword-100")
+
+# Focused set of broad category names as targets
+target_categories = [
+    "gaming",
+    "music", 
+    "sports",
+    "education",
+    "food",
+    "travel", 
+    "movies & tv", 
+    "news",
+    "technology",
+    "comedy", 
+    "fitness",
+    "entertainment",
+    "housing & real estate",
+    "podcasts"
+]
 
 # Function to extract meaningful keywords from a cluster
 def get_meaningful_keywords(cluster_titles, n=30):
@@ -148,7 +176,7 @@ def get_meaningful_keywords(cluster_titles, n=30):
     
     # Get the most common words that have at least 3 characters
     common_words = [word for word, count in word_counts.most_common(n*2) 
-                   if len(word) >= 3 and word not in custom_stopwords]
+                   if len(word) >= 3 and word not in custom_stopwords and count > 1]
     
     # Select only words that appear in our word vectors
     vector_words = [word for word in common_words if word in word_vectors.key_to_index]
@@ -159,69 +187,68 @@ def get_meaningful_keywords(cluster_titles, n=30):
     return vector_words[:n]
 
 # Function to generate cluster name from keywords
-def generate_cluster_name(keywords):
+def generate_cluster_name(keywords, cluster_titles):
     if not keywords:
         return "Miscellaneous"
     
-    # Try to find related words using word embeddings
-    seed_words = keywords[:5]  # Take the top 5 keywords as seeds
-    
-    # Use a focused set of broad category names as targets
-    target_categories = [
-        "gaming",
-        "music", 
-        "sports",
-        "education",
-        "food",
-        "travel", 
-        "movies & tv", 
-        "news",
-        "technology",
-        "comedy", 
-        "entertainment",
-        "housing & real estate",
-    ]
-    
-    # Find which target category is most similar to our keywords
-    max_sim = -1
-    best_category = None
+    # Get the 10 most significant keywords
+    seed_words = keywords[:10]
     
     # Use the average of top keywords for better category matching
     keyword_embeddings = []
     for seed in seed_words:
         if seed in word_vectors.key_to_index:
-            keyword_embeddings.append(word_vectors[seed])
+            # Higher weight for very frequent terms
+            count = " ".join(cluster_titles).count(seed)
+            weight = min(count / 10, 3)  # Cap weight at 3x
+            keyword_embeddings.extend([word_vectors[seed]] * int(weight))
     
-    if keyword_embeddings:
-        avg_embedding = np.mean(keyword_embeddings, axis=0)
+    if not keyword_embeddings:
+        return keywords[0].title()
         
-        # Find the closest target category
-        for category in target_categories:
-            # Handle multi-word categories
-            if " " in category:
-                category_words = category.split()
-                category_embedding = np.mean([word_vectors[word] for word in category_words 
-                                             if word in word_vectors.key_to_index], axis=0)
-            elif category in word_vectors.key_to_index:
-                category_embedding = word_vectors[category]
-            else:
-                continue
-                
-            # Calculate similarity using cosine similarity
-            similarity = cosine_similarity(
-                avg_embedding.reshape(1, -1), 
-                category_embedding.reshape(1, -1)
-            )[0][0]
-            
-            if similarity > max_sim:
-                max_sim = similarity
-                best_category = category
+    avg_embedding = np.mean(keyword_embeddings, axis=0)
     
-    # If we found a good category, use it
-    if max_sim > 0.3 and best_category:
+    # Find the closest target category
+    similarities = {}
+    for category in target_categories:
+        # Handle multi-word categories
+        if " " in category:
+            category_words = category.split()
+            category_vector_words = [word for word in category_words if word in word_vectors.key_to_index]
+            if not category_vector_words:
+                continue
+            category_embedding = np.mean([word_vectors[word] for word in category_vector_words], axis=0)
+        elif category in word_vectors.key_to_index:
+            category_embedding = word_vectors[category]
+        else:
+            continue
+            
+        # Calculate similarity using cosine similarity
+        similarity = cosine_similarity(
+            avg_embedding.reshape(1, -1), 
+            category_embedding.reshape(1, -1)
+        )[0][0]
+        
+        similarities[category] = similarity
+    
+    # Sort similarities and check if we have a clear winner
+    sorted_sims = sorted(similarities.items(), key=lambda x: x[1], reverse=True)
+    
+    # DEBUG: Print the similarities for all categories
+    print(f"\nSimilarities for keywords: {', '.join(seed_words[:5])}...")
+    for cat, sim in sorted_sims[:5]:
+        print(f"  {cat}: {sim:.4f}")
+    
+    if not sorted_sims:
+        return keywords[0].title()
+        
+    best_category, best_sim = sorted_sims[0]
+    
+    # If the similarity is strong enough, use the category name
+    if best_sim > 0.35:  # Slightly higher threshold
         return best_category.title()
     
-    # Use the most common keyword as a fallback
+    # Otherwise, use the most common keyword as fallback
     return keywords[0].title()
 
 # Generate cluster names
@@ -235,7 +262,8 @@ for cluster_id in range(num_clusters):
     cluster_keywords[cluster_id] = keywords
     
     # Generate a name for this cluster
-    cluster_name = generate_cluster_name(keywords)
+    print(f"\nAnalyzing Cluster {cluster_id}...")
+    cluster_name = generate_cluster_name(keywords, cluster_titles)
     cluster_names[cluster_id] = cluster_name
 
 # Add cluster names to DataFrame
@@ -249,15 +277,64 @@ for cluster_id in range(num_clusters):
     print(f"Top keywords: {', '.join(cluster_keywords[cluster_id][:10])}")
     print("Sample titles:")
     for title in df[df["Cluster"] == cluster_id]["Original_Title"].head(3).tolist():
-        print(f"  - {title}")
+        print(f"  • {title}")
+
+# Post-process similar categories - merge clusters that got the same name
+unique_names = set(cluster_names.values())
+if len(unique_names) < num_clusters:
+    print("\nDetected duplicate category names. Merging similar clusters...")
+    
+    # Create a mapping for new cluster IDs
+    new_cluster_map = {}
+    next_id = 0
+    
+    # First, group clusters by name
+    name_to_clusters = {}
+    for cluster_id, name in cluster_names.items():
+        if name not in name_to_clusters:
+            name_to_clusters[name] = []
+        name_to_clusters[name].append(cluster_id)
+    
+    # Create mapping for each original cluster
+    for name, cluster_ids in name_to_clusters.items():
+        for cluster_id in cluster_ids:
+            new_cluster_map[cluster_id] = next_id
+        next_id += 1
+    
+    # Apply the mapping
+    df["Merged_Cluster"] = df["Cluster"].map(new_cluster_map)
+    df["Merged_Name"] = df["Cluster_Name"]  # Keep the same name
+    
+    # Update the number of clusters
+    num_clusters = next_id
+    
+    # Print the merged clusters
+    print("\n=== Merged Clusters ===")
+    for cluster_id in range(num_clusters):
+        cluster_df = df[df["Merged_Cluster"] == cluster_id]
+        cluster_size = len(cluster_df)
+        cluster_name = cluster_df["Merged_Name"].iloc[0]
+        print(f"\nCluster {cluster_id}: {cluster_name} ({cluster_size} videos)")
+        print("Sample titles:")
+        for title in cluster_df["Original_Title"].head(3).tolist():
+            print(f"  • {title}")
+    
+    # Use the merged clusters for saving
+    df["Cluster"] = df["Merged_Cluster"]
+    df["Cluster_Name"] = df["Merged_Name"]
+    
+    # Clean up temporary columns
+    df = df.drop(columns=["Merged_Cluster", "Merged_Name"])
 
 # Save each cluster to a separate CSV file
+print("\nSaving results...")
 for cluster_id in range(num_clusters):
     cluster_df = df[df["Cluster"] == cluster_id]
-    file_name = f"ClustersDataFrame/cluster_{cluster_id}_{cluster_names[cluster_id].replace(' ', '_').lower()}.csv"
+    safe_name = cluster_names.get(cluster_id, f"cluster_{cluster_id}").replace(" & ", "_").replace(" ", "_").lower()
+    file_name = f"ClustersDataFrame/cluster_{cluster_id}_{safe_name}.csv"
     cluster_df.to_csv(file_name, index=False)
+    print(f"Saved: {file_name}")
 
 # Save overall results
 df.to_csv("ClustersDataFrame/all_clusters.csv", index=False)
-
 print("\n✅ Analysis complete! Results saved to the 'ClustersDataFrame' folder.")
