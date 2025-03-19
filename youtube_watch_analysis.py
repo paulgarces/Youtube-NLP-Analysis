@@ -51,12 +51,12 @@ import pandas as pd
 import re
 import os
 import numpy as np
-from gensim.models import Word2Vec
 from sklearn.cluster import KMeans
 from sklearn.preprocessing import StandardScaler
+from sentence_transformers import SentenceTransformer
 from bertopic import BERTopic
 
-# Create a folder for cluster CSV files
+# Create folder for cluster outputs
 os.makedirs("ClustersDataFrame", exist_ok=True)
 
 # Load YouTube Watch History
@@ -64,14 +64,14 @@ path = "watch-history.json"
 with open(path, "r", encoding="utf-8") as f:
     data = json.load(f)
 
-# Custom stopwords to filter out common words
+# Define stopwords to remove irrelevant words
 custom_stopwords = {
     "the", "to", "a", "in", "for", "how", "you", "and", "vs", "video", "official",
     "trailer", "new", "top", "best", "funny", "moments", "ultimate", "highlights",
-    "ft", "music", "audio", "watch", "watched"
+    "ft", "music", "audio", "watch", "watched", "episode", "clips", "part"
 }
 
-# Extract cleaned video titles
+# Extract & Clean Titles
 titles = []
 for entry in data:
     if entry.get("header") == "Youtube TV":  # Ignore YouTube TV
@@ -93,34 +93,25 @@ for entry in data:
 print(f"Total valid videos: {len(titles)}")
 print("Sample Titles:", titles[:10])
 
-# Tokenize titles into lists of words
-titles_tokenized = [title.split() for title in titles]
+# **Use SBERT to Generate Sentence Embeddings**
+sbert_model = SentenceTransformer("all-MiniLM-L6-v2")  # Small but powerful model
+X = sbert_model.encode(titles, convert_to_numpy=True)  # Get embeddings
 
-# Train Word2Vec model on tokenized words
-word2vec_model = Word2Vec(sentences=titles_tokenized, vector_size=100, window=5, min_count=1, workers=4)
-
-# Convert each title into an averaged word vector
-title_vectors = []
-for title in titles_tokenized:
-    vectors = [word2vec_model.wv[word] for word in title if word in word2vec_model.wv]
-    avg_vector = np.mean(vectors, axis=0) if vectors else np.zeros(100)  # Handle empty cases
-    title_vectors.append(avg_vector)
-
-# Normalize data before clustering
+# Normalize embeddings
 scaler = StandardScaler()
-X = scaler.fit_transform(title_vectors)
+X_scaled = scaler.fit_transform(X)
 
 # Apply KMeans Clustering
-num_clusters = 8
+num_clusters = 7  # REDUCED clusters for more general topics
 kmeans = KMeans(n_clusters=num_clusters, random_state=42, init="k-means++", n_init=10)
-clusters = kmeans.fit_predict(X)
+clusters = kmeans.fit_predict(X_scaled)
 
 # Store results in a DataFrame
 dataframe = pd.DataFrame({"Title": titles, "Cluster": clusters})
 
-# ✅ **NEW: Auto-Generate Cluster Labels with BERTopic**
+# ✅ **Use BERTopic to Auto-Generate Cluster Names**
 topic_model = BERTopic()
-topics, _ = topic_model.fit_transform(titles)  # Train BERTopic on raw titles
+topics, _ = topic_model.fit_transform(titles)
 
 # Map KMeans clusters to BERTopic-generated topics
 cluster_names = {}
@@ -136,8 +127,21 @@ for cluster in range(num_clusters):
         else:
             cluster_names[cluster] = "Unknown"
 
-# Assign meaningful cluster names
-dataframe["Cluster Name"] = dataframe["Cluster"].map(cluster_names)
+# ✅ **Manually Correct Cluster Names**
+# If BERTopic doesn't work perfectly, you can manually adjust these:
+manual_labels = {
+    0: "Gaming / Sidemen",
+    1: "Sports / Soccer",
+    2: "Music & Entertainment",
+    3: "Tech & Gadgets",
+    4: "Movies & TV Shows",
+    5: "Finance & Business",
+    6: "Housing & Real Estate"
+}
+
+# Assign final names
+dataframe["Cluster Name"] = dataframe["Cluster"].map(lambda x: cluster_names.get(x, "Unknown"))
+dataframe["Manual Cluster Name"] = dataframe["Cluster"].map(lambda x: manual_labels.get(x, "Miscellaneous"))
 
 # Print the final auto-labeled cluster names
 print("\n### Auto-Generated Cluster Categories ###\n")
