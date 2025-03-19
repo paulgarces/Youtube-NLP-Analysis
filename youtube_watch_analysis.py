@@ -53,9 +53,8 @@ import os
 import numpy as np
 from sklearn.cluster import AgglomerativeClustering
 from sklearn.preprocessing import StandardScaler
-from sklearn.feature_extraction.text import TfidfVectorizer
 from sentence_transformers import SentenceTransformer
-from bertopic import BERTopic
+from sklearn.metrics.pairwise import cosine_similarity
 
 # Create folder for cluster outputs
 os.makedirs("ClustersDataFrame", exist_ok=True)
@@ -77,76 +76,102 @@ titles = []
 for entry in data:
     if entry.get("header") == "Youtube TV":  # Ignore YouTube TV
         continue
-
     title = entry.get("title", "").replace("Watched ", "").strip()
-    
     if "details" in entry and any(d.get("name") == "From Google Ads" for d in entry["details"]):
         continue
-
     if title.startswith("https://") or title == "":
         continue
-
     # Remove special characters and stopwords
     title_cleaned = " ".join([word.lower() for word in re.sub(r"[^a-zA-Z0-9 ]", "", title).split() if word not in custom_stopwords])
+    titles.append(title)  # Keep original title for readability
     
-    titles.append(title_cleaned)
+cleaned_titles = [" ".join([word.lower() for word in re.sub(r"[^a-zA-Z0-9 ]", "", title).split() if word not in custom_stopwords]) for title in titles]
 
 print(f"Total valid videos: {len(titles)}")
-print("Sample Titles:", titles[:10])
+print("Sample Titles:", titles[:5])
 
-# **Generate Hybrid Embeddings (TF-IDF + SBERT)**
-sbert_model = SentenceTransformer("all-MiniLM-L6-v2")  # Small but powerful model
-sbert_embeddings = sbert_model.encode(titles, convert_to_numpy=True)  # Get SBERT embeddings
+# Define predetermined categories with keywords
+predefined_categories = {
+    "Music": ["song", "music", "dance", "choreography", "album", "concert", "lyrics", "remix", "beat", "instrumental", "singing", "vocalist", "band", "rap", "hip hop", "jazz", "rock", "pop", "edm", "dj"],
+    "Gaming": ["game", "gaming", "playthrough", "gameplay", "multiplayer", "speedrun", "let's play", "minecraft", "fortnite", "valorant", "league of legends", "dota", "strategy", "rpg", "fps", "walkthrough", "console", "pc game"],
+    "Sports": ["football", "basketball", "soccer", "nba", "nfl", "mlb", "fifa", "match", "highlights", "sport", "athletic", "champion", "tournament", "boxing", "cricket", "tennis", "golf", "olympics", "world cup"],
+    "Movies & TV": ["movie", "film", "series", "episode", "season", "tv show", "cinema", "documentary", "netflix", "hulu", "disney", "actor", "director", "plot", "review", "trailer", "scene", "character", "production"],
+    "Comedy": ["comedy", "funny", "joke", "stand up", "humor", "prank", "parody", "sketch", "comedian", "laugh", "meme", "roast", "sitcom"],
+    "Education": ["tutorial", "learn", "education", "course", "lecture", "professor", "school", "university", "college", "teach", "training", "exam", "lesson", "study", "explanation", "guide", "how to"],
+    "Technology": ["tech", "review", "unboxing", "gadget", "smartphone", "computer", "laptop", "software", "hardware", "programming", "coding", "development", "ai", "machine learning", "data science", "algorithm"],
+    "Travel & Lifestyle": ["travel", "vlog", "lifestyle", "tour", "apartment", "house", "home", "mansion", "penthouse", "renovation", "decoration", "design", "trip", "journey", "vacation", "hotel", "resort", "city", "country"],
+    "Food & Cooking": ["food", "recipe", "cooking", "chef", "kitchen", "baking", "restaurant", "cuisine", "meal", "dish", "ingredient", "taste", "flavor", "culinary", "diet", "nutrition"],
+    "News & Politics": ["news", "politics", "analysis", "election", "debate", "president", "government", "campaign", "senator", "congress", "parliament", "candidate", "vote", "political", "policy", "issue"]
+}
 
-# Use TF-IDF to emphasize important words
-tfidf_vectorizer = TfidfVectorizer(stop_words="english", max_features=5000)
-tfidf_matrix = tfidf_vectorizer.fit_transform(titles).toarray()
+# Function to classify a title
+def classify_title(title, categories):
+    title_lower = title.lower()
+    
+    # Check for direct keyword matches
+    scores = {}
+    for category, keywords in categories.items():
+        score = sum(1 for keyword in keywords if keyword.lower() in title_lower)
+        scores[category] = score
+    
+    # If we have a clear match, return it
+    max_score = max(scores.values())
+    if max_score > 0:
+        best_categories = [cat for cat, score in scores.items() if score == max_score]
+        return best_categories[0]
+    
+    # If no direct match, return "Other"
+    return "Other"
 
-# Combine SBERT + TF-IDF
-X = np.hstack((sbert_embeddings, tfidf_matrix))
+# Use SBERT for semantic understanding of titles
+print("Loading SBERT model and generating embeddings...")
+sbert_model = SentenceTransformer("all-MiniLM-L6-v2")
+title_embeddings = sbert_model.encode(cleaned_titles, convert_to_numpy=True)
 
-# Normalize embeddings
-scaler = StandardScaler()
-X_scaled = scaler.fit_transform(X)
+# Generate category embeddings (average of multiple keywords)
+category_embeddings = {}
+for category, keywords in predefined_categories.items():
+    keyword_embeddings = sbert_model.encode(keywords, convert_to_numpy=True)
+    category_embeddings[category] = np.mean(keyword_embeddings, axis=0)
 
-# Apply Agglomerative Clustering (instead of K-Means)
-num_clusters = 10  # **Increased to separate topics better**
-agglo = AgglomerativeClustering(n_clusters=num_clusters)
-clusters = agglo.fit_predict(X_scaled)
+# Classify using semantic similarity as fallback for keyword matching
+classifications = []
+for i, title in enumerate(titles):
+    # First try keyword matching
+    category = classify_title(title, predefined_categories)
+    
+    # If no match, use semantic similarity
+    if category == "Other":
+        title_embedding = title_embeddings[i].reshape(1, -1)
+        similarities = {}
+        for cat, cat_embedding in category_embeddings.items():
+            similarity = cosine_similarity(title_embedding, cat_embedding.reshape(1, -1))[0][0]
+            similarities[cat] = similarity
+        
+        category = max(similarities.items(), key=lambda x: x[1])[0]
+    
+    classifications.append(category)
 
 # Store results in a DataFrame
-dataframe = pd.DataFrame({"Title": titles, "Cluster": clusters})
+dataframe = pd.DataFrame({"Title": titles, "Category": classifications})
 
-# ✅ **Use BERTopic with Pre-Defined Categories**
-topic_model = BERTopic(nr_topics="auto")  # Let it auto-detect categories
-topics, _ = topic_model.fit_transform(titles)
+# Print category distribution
+print("\n### Category Distribution ###\n")
+print(dataframe["Category"].value_counts())
 
-# Map clusters to BERTopic topics
-cluster_names = {}
-for cluster in range(num_clusters):
-    cluster_titles = dataframe[dataframe["Cluster"] == cluster]["Title"].tolist()
-    
-    if cluster_titles:
-        topic_idx, _ = topic_model.find_topics(" ".join(cluster_titles), top_n=1)
-        
-        if topic_idx:
-            top_words = topic_model.get_topic(topic_idx[0])  # Get top words for this topic
-            cluster_names[cluster] = " / ".join([word for word, _ in top_words[:3]])  # Use top 3 words
-        else:
-            cluster_names[cluster] = "Unknown"
-
-# Assign auto-detected cluster names
-dataframe["Cluster Name"] = dataframe["Cluster"].map(cluster_names)
-
-# Print the final auto-labeled cluster names
-print("\n### Auto-Generated Cluster Categories ###\n")
-for cluster, label in cluster_names.items():
-    print(f"Cluster {cluster} → {label}")
-
-# Save each cluster separately into CSV files
-for cluster_num in range(num_clusters):
-    file_name = f"ClustersDataFrame/cluster_{cluster_num}.csv"
-    df = dataframe[dataframe["Cluster"] == cluster_num]
+# Save each category separately into CSV files
+for category in set(classifications):
+    file_name = f"ClustersDataFrame/category_{category.replace(' & ', '_').replace(' ', '_').lower()}.csv"
+    df = dataframe[dataframe["Category"] == category]
     df.to_csv(file_name, index=False)
 
-print("\n✅ Clusters saved in 'ClustersDataFrame' folder")
+print("\n✅ Categories saved in 'ClustersDataFrame' folder")
+
+# Show examples from each category
+print("\n### Examples from each category ###\n")
+for category in set(classifications):
+    print(f"--- {category} ---")
+    examples = dataframe[dataframe["Category"] == category]["Title"].sample(min(5, len(dataframe[dataframe["Category"] == category]))).tolist()
+    for ex in examples:
+        print(f"  • {ex}")
+    print()
