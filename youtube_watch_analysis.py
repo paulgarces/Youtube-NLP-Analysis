@@ -50,13 +50,13 @@ import json
 import pandas as pd
 import re
 import os
+import numpy as np
 from gensim.models import Word2Vec
 from sklearn.cluster import KMeans
 from sklearn.preprocessing import StandardScaler
-from collections import Counter
-from bertopic import BERTopic  # ✅ NEW: Auto-label clusters with meaningful names
+from bertopic import BERTopic
 
-# Create a folder for clusters
+# Create a folder for cluster CSV files
 os.makedirs("ClustersDataFrame", exist_ok=True)
 
 # Load YouTube Watch History
@@ -64,13 +64,14 @@ path = "watch-history.json"
 with open(path, "r", encoding="utf-8") as f:
     data = json.load(f)
 
-# Custom stopwords to remove
+# Custom stopwords to filter out common words
 custom_stopwords = {
-    "the", "to", "a", "in", "for", "how", "you", "2", "and", "vs", "video", "official",
+    "the", "to", "a", "in", "for", "how", "you", "and", "vs", "video", "official",
     "trailer", "new", "top", "best", "funny", "moments", "ultimate", "highlights",
     "ft", "music", "audio", "watch", "watched"
 }
 
+# Extract cleaned video titles
 titles = []
 for entry in data:
     if entry.get("header") == "Youtube TV":  # Ignore YouTube TV
@@ -95,21 +96,21 @@ print("Sample Titles:", titles[:10])
 # Tokenize titles into lists of words
 titles_tokenized = [title.split() for title in titles]
 
-# Train Word2Vec model
+# Train Word2Vec model on tokenized words
 word2vec_model = Word2Vec(sentences=titles_tokenized, vector_size=100, window=5, min_count=1, workers=4)
 
 # Convert each title into an averaged word vector
 title_vectors = []
 for title in titles_tokenized:
     vectors = [word2vec_model.wv[word] for word in title if word in word2vec_model.wv]
-    avg_vector = sum(vectors) / len(vectors) if vectors else [0] * 100  # Handle empty cases
+    avg_vector = np.mean(vectors, axis=0) if vectors else np.zeros(100)  # Handle empty cases
     title_vectors.append(avg_vector)
 
 # Normalize data before clustering
 scaler = StandardScaler()
 X = scaler.fit_transform(title_vectors)
 
-# Clustering using KMeans
+# Apply KMeans Clustering
 num_clusters = 8
 kmeans = KMeans(n_clusters=num_clusters, random_state=42, init="k-means++", n_init=10)
 clusters = kmeans.fit_predict(X)
@@ -117,7 +118,7 @@ clusters = kmeans.fit_predict(X)
 # Store results in a DataFrame
 dataframe = pd.DataFrame({"Title": titles, "Cluster": clusters})
 
-# ✅ **NEW: Use BERTopic to Automatically Name Clusters**
+# ✅ **NEW: Auto-Generate Cluster Labels with BERTopic**
 topic_model = BERTopic()
 topics, _ = topic_model.fit_transform(titles)  # Train BERTopic on raw titles
 
@@ -126,19 +127,24 @@ cluster_names = {}
 for cluster in range(num_clusters):
     cluster_titles = dataframe[dataframe["Cluster"] == cluster]["Title"].tolist()
     
-    if len(cluster_titles) > 0:
-        topic_words, _ = topic_model.find_topics(" ".join(cluster_titles), top_n=3)
-        cluster_names[cluster] = " / ".join(topic_words[:3])  # Use top 3 topic words as category
+    if cluster_titles:
+        topic_idx, _ = topic_model.find_topics(" ".join(cluster_titles), top_n=1)
+        
+        if topic_idx:
+            top_words = topic_model.get_topic(topic_idx[0])  # Get top words for this topic
+            cluster_names[cluster] = " / ".join([word for word, _ in top_words[:3]])  # Use top 3 words
+        else:
+            cluster_names[cluster] = "Unknown"
 
-# Assign dynamic names to clusters
+# Assign meaningful cluster names
 dataframe["Cluster Name"] = dataframe["Cluster"].map(cluster_names)
 
-# Print final cluster names
-print("\n### Cluster Categories (Auto-Labeled) ###\n")
+# Print the final auto-labeled cluster names
+print("\n### Auto-Generated Cluster Categories ###\n")
 for cluster, label in cluster_names.items():
     print(f"Cluster {cluster} → {label}")
 
-# Save each cluster separately
+# Save each cluster separately into CSV files
 for cluster_num in range(num_clusters):
     file_name = f"ClustersDataFrame/cluster_{cluster_num}.csv"
     df = dataframe[dataframe["Cluster"] == cluster_num]
