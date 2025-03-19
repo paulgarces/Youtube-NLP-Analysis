@@ -51,22 +51,23 @@ import pandas as pd
 import re
 import os
 from gensim.models import Word2Vec
-from sklearn.cluster import KMeans
+from sklearn.cluster import KMeans, DBSCAN
 from sklearn.preprocessing import StandardScaler
 from collections import Counter
 
-# Create a folder to store cluster CSVs
+# Create a folder for clusters
 os.makedirs("ClustersDataFrame", exist_ok=True)
 
-# Load JSON file
+# Load YouTube Watch History
 path = "watch-history.json"
 with open(path, "r", encoding="utf-8") as f:
     data = json.load(f)
 
-# Define custom stopwords (removes generic words and numbers)
+# Custom stopwords to remove
 custom_stopwords = {
-    "the", "to", "a", "in", "for", "how", "you", "2", "and", "vs", "video", "official", "trailer",
-    "new", "top", "best", "funny", "moments", "ultimate", "highlights", "ft", "music", "audio"
+    "the", "to", "a", "in", "for", "how", "you", "2", "and", "vs", "video", "official",
+    "trailer", "new", "top", "best", "funny", "moments", "ultimate", "highlights",
+    "ft", "music", "audio", "watch", "watched"
 }
 
 titles = []
@@ -107,19 +108,23 @@ for title in titles_tokenized:
 scaler = StandardScaler()
 X = scaler.fit_transform(title_vectors)
 
-# Reduce number of clusters to 7 (grouping broader topics)
-num_clusters = 7
+# Clustering: Use KMeans first, then DBSCAN for refining
+num_clusters = 8
 kmeans = KMeans(n_clusters=num_clusters, random_state=42, init="k-means++", n_init=10)
 clusters = kmeans.fit_predict(X)
 
+# Run DBSCAN to find smaller, more refined clusters
+dbscan = DBSCAN(eps=1.2, min_samples=5)
+dbscan_labels = dbscan.fit_predict(X)
+
 # Store results in a DataFrame
-dataframe = pd.DataFrame({"Title": titles, "Cluster": clusters})
+dataframe = pd.DataFrame({"Title": titles, "KMeans Cluster": clusters, "DBSCAN Cluster": dbscan_labels})
 
 # Auto-label clusters based on most common words
 cluster_labels = {}
 
 for cluster_num in range(num_clusters):
-    cluster_titles = dataframe[dataframe["Cluster"] == cluster_num]["Title"].tolist()
+    cluster_titles = dataframe[dataframe["KMeans Cluster"] == cluster_num]["Title"].tolist()
     
     words = [word for title in cluster_titles for word in title.split()]
     most_common_words = [word for word, count in Counter(words).most_common(5) if word not in custom_stopwords]  # Remove generic words
@@ -133,13 +138,14 @@ manual_labels = {
     1: "Gaming",
     2: "Movies & TV",
     3: "Music",
-    4: "Housing & Real Estate",
+    4: "Real Estate & Housing",
     5: "Tech & Gadgets",
-    6: "Random / Miscellaneous"
+    6: "News & Education",
+    7: "Random / Miscellaneous"
 }
 
 # Add labeled clusters to DataFrame
-dataframe["Cluster Name"] = dataframe["Cluster"].map(manual_labels)
+dataframe["Cluster Name"] = dataframe["KMeans Cluster"].map(manual_labels)
 
 # Print final cluster names
 print("\n### Cluster Categories ###\n")
@@ -149,7 +155,7 @@ for cluster, label in manual_labels.items():
 # Save each cluster separately
 for cluster_num in range(num_clusters):
     file_name = f"ClustersDataFrame/cluster_{cluster_num}.csv"
-    df = dataframe[dataframe["Cluster"] == cluster_num]
+    df = dataframe[dataframe["KMeans Cluster"] == cluster_num]
     df.to_csv(file_name, index=False)
 
 print("\n✅ Clusters saved in 'ClustersDataFrame' folder")
