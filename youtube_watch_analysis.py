@@ -51,8 +51,9 @@ import pandas as pd
 import re
 import os
 import numpy as np
-from sklearn.cluster import KMeans
+from sklearn.cluster import AgglomerativeClustering
 from sklearn.preprocessing import StandardScaler
+from sklearn.feature_extraction.text import TfidfVectorizer
 from sentence_transformers import SentenceTransformer
 from bertopic import BERTopic
 
@@ -68,7 +69,7 @@ with open(path, "r", encoding="utf-8") as f:
 custom_stopwords = {
     "the", "to", "a", "in", "for", "how", "you", "and", "vs", "video", "official",
     "trailer", "new", "top", "best", "funny", "moments", "ultimate", "highlights",
-    "ft", "music", "audio", "watch", "watched", "episode", "clips", "part"
+    "ft", "music", "audio", "watch", "watched", "episode", "clips", "part", "shorts"
 }
 
 # Extract & Clean Titles
@@ -93,27 +94,34 @@ for entry in data:
 print(f"Total valid videos: {len(titles)}")
 print("Sample Titles:", titles[:10])
 
-# **Use SBERT to Generate Sentence Embeddings**
+# **Generate Hybrid Embeddings (TF-IDF + SBERT)**
 sbert_model = SentenceTransformer("all-MiniLM-L6-v2")  # Small but powerful model
-X = sbert_model.encode(titles, convert_to_numpy=True)  # Get embeddings
+sbert_embeddings = sbert_model.encode(titles, convert_to_numpy=True)  # Get SBERT embeddings
+
+# Use TF-IDF to emphasize important words
+tfidf_vectorizer = TfidfVectorizer(stop_words="english", max_features=5000)
+tfidf_matrix = tfidf_vectorizer.fit_transform(titles).toarray()
+
+# Combine SBERT + TF-IDF
+X = np.hstack((sbert_embeddings, tfidf_matrix))
 
 # Normalize embeddings
 scaler = StandardScaler()
 X_scaled = scaler.fit_transform(X)
 
-# Apply KMeans Clustering
-num_clusters = 7  # REDUCED clusters for more general topics
-kmeans = KMeans(n_clusters=num_clusters, random_state=42, init="k-means++", n_init=10)
-clusters = kmeans.fit_predict(X_scaled)
+# Apply Agglomerative Clustering (instead of K-Means)
+num_clusters = 10  # **Increased to separate topics better**
+agglo = AgglomerativeClustering(n_clusters=num_clusters)
+clusters = agglo.fit_predict(X_scaled)
 
 # Store results in a DataFrame
 dataframe = pd.DataFrame({"Title": titles, "Cluster": clusters})
 
-# ✅ **Use BERTopic to Auto-Generate Cluster Names**
-topic_model = BERTopic()
+# ✅ **Use BERTopic with Pre-Defined Categories**
+topic_model = BERTopic(nr_topics="auto")  # Let it auto-detect categories
 topics, _ = topic_model.fit_transform(titles)
 
-# Map KMeans clusters to BERTopic-generated topics
+# Map clusters to BERTopic topics
 cluster_names = {}
 for cluster in range(num_clusters):
     cluster_titles = dataframe[dataframe["Cluster"] == cluster]["Title"].tolist()
@@ -127,21 +135,8 @@ for cluster in range(num_clusters):
         else:
             cluster_names[cluster] = "Unknown"
 
-# ✅ **Manually Correct Cluster Names**
-# If BERTopic doesn't work perfectly, you can manually adjust these:
-manual_labels = {
-    0: "Gaming / Sidemen",
-    1: "Sports / Soccer",
-    2: "Music & Entertainment",
-    3: "Tech & Gadgets",
-    4: "Movies & TV Shows",
-    5: "Finance & Business",
-    6: "Housing & Real Estate"
-}
-
-# Assign final names
-dataframe["Cluster Name"] = dataframe["Cluster"].map(lambda x: cluster_names.get(x, "Unknown"))
-dataframe["Manual Cluster Name"] = dataframe["Cluster"].map(lambda x: manual_labels.get(x, "Miscellaneous"))
+# Assign auto-detected cluster names
+dataframe["Cluster Name"] = dataframe["Cluster"].map(cluster_names)
 
 # Print the final auto-labeled cluster names
 print("\n### Auto-Generated Cluster Categories ###\n")
