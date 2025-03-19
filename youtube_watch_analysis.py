@@ -51,9 +51,10 @@ import pandas as pd
 import re
 import os
 from gensim.models import Word2Vec
-from sklearn.cluster import KMeans, DBSCAN
+from sklearn.cluster import KMeans
 from sklearn.preprocessing import StandardScaler
 from collections import Counter
+from bertopic import BERTopic  # ✅ NEW: Auto-label clusters with meaningful names
 
 # Create a folder for clusters
 os.makedirs("ClustersDataFrame", exist_ok=True)
@@ -108,54 +109,39 @@ for title in titles_tokenized:
 scaler = StandardScaler()
 X = scaler.fit_transform(title_vectors)
 
-# Clustering: Use KMeans first, then DBSCAN for refining
+# Clustering using KMeans
 num_clusters = 8
 kmeans = KMeans(n_clusters=num_clusters, random_state=42, init="k-means++", n_init=10)
 clusters = kmeans.fit_predict(X)
 
-# Run DBSCAN to find smaller, more refined clusters
-dbscan = DBSCAN(eps=1.2, min_samples=5)
-dbscan_labels = dbscan.fit_predict(X)
-
 # Store results in a DataFrame
-dataframe = pd.DataFrame({"Title": titles, "KMeans Cluster": clusters, "DBSCAN Cluster": dbscan_labels})
+dataframe = pd.DataFrame({"Title": titles, "Cluster": clusters})
 
-# Auto-label clusters based on most common words
-cluster_labels = {}
+# ✅ **NEW: Use BERTopic to Automatically Name Clusters**
+topic_model = BERTopic()
+topics, _ = topic_model.fit_transform(titles)  # Train BERTopic on raw titles
 
-for cluster_num in range(num_clusters):
-    cluster_titles = dataframe[dataframe["KMeans Cluster"] == cluster_num]["Title"].tolist()
+# Map KMeans clusters to BERTopic-generated topics
+cluster_names = {}
+for cluster in range(num_clusters):
+    cluster_titles = dataframe[dataframe["Cluster"] == cluster]["Title"].tolist()
     
-    words = [word for title in cluster_titles for word in title.split()]
-    most_common_words = [word for word, count in Counter(words).most_common(5) if word not in custom_stopwords]  # Remove generic words
+    if len(cluster_titles) > 0:
+        topic_words, _ = topic_model.find_topics(" ".join(cluster_titles), top_n=3)
+        cluster_names[cluster] = " / ".join(topic_words[:3])  # Use top 3 topic words as category
 
-    cluster_name = " / ".join(most_common_words)  # Assign category name
-    cluster_labels[cluster_num] = cluster_name if cluster_name else f"Cluster {cluster_num}"
-
-# Manually refine category names based on detected patterns
-manual_labels = {
-    0: "Sports",
-    1: "Gaming",
-    2: "Movies & TV",
-    3: "Music",
-    4: "Real Estate & Housing",
-    5: "Tech & Gadgets",
-    6: "News & Education",
-    7: "Random / Miscellaneous"
-}
-
-# Add labeled clusters to DataFrame
-dataframe["Cluster Name"] = dataframe["KMeans Cluster"].map(manual_labels)
+# Assign dynamic names to clusters
+dataframe["Cluster Name"] = dataframe["Cluster"].map(cluster_names)
 
 # Print final cluster names
-print("\n### Cluster Categories ###\n")
-for cluster, label in manual_labels.items():
+print("\n### Cluster Categories (Auto-Labeled) ###\n")
+for cluster, label in cluster_names.items():
     print(f"Cluster {cluster} → {label}")
 
 # Save each cluster separately
 for cluster_num in range(num_clusters):
     file_name = f"ClustersDataFrame/cluster_{cluster_num}.csv"
-    df = dataframe[dataframe["KMeans Cluster"] == cluster_num]
+    df = dataframe[dataframe["Cluster"] == cluster_num]
     df.to_csv(file_name, index=False)
 
 print("\n✅ Clusters saved in 'ClustersDataFrame' folder")
