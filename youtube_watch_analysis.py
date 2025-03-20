@@ -23,7 +23,8 @@ custom_stopwords = {
     "were", "when", "which", "there", "their", "they", "them", "these", "those", "its",
     "i", "you", "he", "she", "we", "my", "your", "his", "her", "our", "than", "how", 
     "black", "to", "best", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "shorts", 
-    "us", "vs", "most", "full", "like", "me", "if", "so", "just", "get", "got"
+    "us", "vs", "most", "full", "like", "me", "if", "so", "just", "get", "got", "premier",
+    "nbc", "cup", "world"
 }
 
 titles = []
@@ -65,7 +66,7 @@ scaler = StandardScaler()
 X = scaler.fit_transform(title_vectors)
 
 # Apply KMeans with more clusters
-num_clusters = 6  # Increase clusters for better separation
+num_clusters = 5  # Increase clusters for better separation
 kmeans = KMeans(n_clusters=num_clusters, random_state=42, init="k-means++", n_init=10)
 clusters = kmeans.fit_predict(X)
 
