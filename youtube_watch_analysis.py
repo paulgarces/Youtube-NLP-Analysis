@@ -1,5 +1,5 @@
 # Paul Garces - YouTube Watch History Analysis
-# This script reads the watch history from a JSON file and performs clustering on the video titles
+# This .py script reads the watch history from a JSON file and performs clustering on the video titles
 
 import json
 import pandas as pd
@@ -124,6 +124,11 @@ for cluster, label in cluster_labels.items():
 for cluster_num in range(num_clusters):
     file_name = f"ClustersDataFrame/cluster_{cluster_num}.csv"
     df = dataframe[dataframe["Cluster"] == cluster_num]
-    df.to_csv(file_name, index=False)
+    
+    sample_size = min(2000, len(df))
+    df_to_save = df.head(sample_size)
+    
+    df_to_save.to_csv(file_name, index=False)
+    print(f"Saved {sample_size} rows for Cluster {cluster_num}")
 
-print("\n Clusters saved in 'ClustersDataFrame' folder")
+print("\n Clusters saved in 'ClustersDataFrame' file!")
