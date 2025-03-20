@@ -1,5 +1,5 @@
 # Paul Garces - YouTube Watch History Analysis
-# This script reads the watch history from a JSON file and performs clustering on the video titles.
+# This script reads the watch history from a JSON file and performs clustering on the video titles
 
 import json
 import pandas as pd
