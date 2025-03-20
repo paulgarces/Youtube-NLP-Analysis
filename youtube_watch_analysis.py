@@ -18,11 +18,13 @@ with open(path, "r", encoding="utf-8") as f:
 # Define custom stopwords (remove generic words like "best", "funny", "moments")
 custom_stopwords = {
     "best", "funny", "moments", "top", "new", "great", "ultimate", "official", "trailer",
-    
-    "the", "of", "and", "in", "to", "a", "is", "that", "it", "with", "for", "as", "on", 
-    "at", "by", "this", "but", "or", "an", "from", "not", "what", "all", "are", "was", 
+    "the", "of", "and", "in", "to", "a", "is", "that", "it", "with", "for", "as", "on",
+    "at", "by", "this", "but", "or", "an", "from", "not", "what", "all", "are", "was",
     "were", "when", "which", "there", "their", "they", "them", "these", "those", "its",
-    "i", "you", "he", "she", "we", "my", "your", "his", "her", "our", "than"}
+    "i", "you", "he", "she", "we", "my", "your", "his", "her", "our", "than", "how", 
+    "black", "to", "best", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "shorts", 
+    "us", "vs", "most", "full", "like", "me", "if", "so", "just", "get", "got"
+}
 
 titles = []
 for entry in data:
@@ -38,8 +40,8 @@ for entry in data:
         continue
 
     # Remove special characters and stopwords
-    title_cleaned = " ".join([word.lower() for word in re.sub(r"[^a-zA-Z0-9 ]", "", title).split() if word not in custom_stopwords])
-    
+    title_cleaned = " ".join([word.lower() for word in re.sub(r"[^a-zA-Z0-9 ]", "", title).split() 
+                              if word.lower() not in custom_stopwords])    
     titles.append(title_cleaned)
 
 print(f"Total valid videos: {len(titles)}")
@@ -63,7 +65,7 @@ scaler = StandardScaler()
 X = scaler.fit_transform(title_vectors)
 
 # Apply KMeans with more clusters
-num_clusters = 7  # Increase clusters for better separation
+num_clusters = 6  # Increase clusters for better separation
 kmeans = KMeans(n_clusters=num_clusters, random_state=42, init="k-means++", n_init=10)
 clusters = kmeans.fit_predict(X)
 
