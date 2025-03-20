@@ -57,7 +57,7 @@ scaler = StandardScaler()
 X = scaler.fit_transform(title_vectors)
 
 # Apply KMeans with more clusters
-num_clusters = 8  # Increase clusters for better separation
+num_clusters = 7  # Increase clusters for better separation
 kmeans = KMeans(n_clusters=num_clusters, random_state=42, init="k-means++", n_init=10)
 clusters = kmeans.fit_predict(X)
 
