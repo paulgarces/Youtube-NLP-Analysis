@@ -96,3 +96,17 @@ This cluster primarily consists of music-related content**, including official m
 - *The Weeknd ft. Ariana Grande - Save Your Tears (Remix)*
 - *Ed Sheeran - Perfect (Live Performance at Wembley Stadium)*
 - *Rainbow Bap (Remix) (Official Visualizer)*
+
+## 🎮 Cluster 2: Gaming & Challenges
+
+This cluster consists of gaming-related content, including gameplay highlights, challenges, esports competitions, and gaming-related discussions. The content spans across different gaming genres, featuring popular games, player-versus-player (PvP) matches, and reaction-based gaming moments. Many of these videos include challenges, speedruns, or collaborations between popular gaming creators.
+
+**Top Keywords:** `sidemen`, `ksi`, `office`, `w2s`, `harry`
+
+**Example Titles:**
+- *Sidemen Play GTA 5 - Chaos Mode Challenge!*
+- *Fortnite Pro Takes on the 1HP Challenge*
+- *FIFA 23 - Impossible Free Kick Goals Compilation*
+- *Minecraft Speedrunner vs 3 Hunters - Can I Survive?*
+- *Call of Duty: Warzone - Clutch Moments & Insane Plays*
+- *Among Us - 200 IQ Plays That Will Shock You*
