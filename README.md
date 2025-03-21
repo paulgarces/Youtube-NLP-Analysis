@@ -125,3 +125,17 @@ While the majority of content revolves around football (soccer), this cluster al
 - *Germany vs Hungary | Highlights | UEFA Nations League*
 - *Top 23 Premier League goals of 2023 | NBC Sports*
 - *Denver Broncos vs. Seattle Seahawks | NFL 2024 Week 1 Game Highlights*
+
+## 🏡 Cluster 4: Housing & Real Estate
+
+This cluster primarily consists of content related to housing, real estate, and apartment tours. Many of these videos feature apartment tours in major metropolitan areas such as New York City (NYC) and Los Angeles (LA), and Philadelphia, highlighting modern interiors, pricing comparisons, and unique architectural designs.
+
+**Top Keywords:** `nyc`, `apartment`, `tour`, `la`, `penthouse`
+
+**Example Titles:**
+- *TOURING a FUTURISTIC New York Penthouse | NYC APARTMENT TOUR	*
+- *Inside a $75,000,000 OFF MARKET NYC Penthouse | Mansion Tour	*
+- *i toured 14 philly apartments and this is how it went.*
+- *4 Million LA Apartment #shorts #la*
+- *Day in the life in my new NYC apartment!*
+- *How SoHo NYC Became The Cast Iron District | Walking Tour | Architectural Digest*
