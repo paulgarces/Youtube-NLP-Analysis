@@ -64,7 +64,7 @@ For each file:
 - `Original_Title`: Raw YouTube title
 - `Cleaned_Title`: Title after cleaning and stopword removal
 - `Cluster`: Numerical cluster ID
-- `Cluster_Name`: Label derived from most common words in the group
+- `Cluster_Name`: Most common words in the group
 
 ---
 
