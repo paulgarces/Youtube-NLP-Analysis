@@ -94,7 +94,6 @@ This cluster primarily consists of music-related content**, including official m
 - *PUBLIC - Make You Mine (Official Lyric Video)*
 - *TMac Miller - My Favorite Part (feat. Ariana Grande) (Live)*
 - *The Weeknd ft. Ariana Grande - Save Your Tears (Remix)*
-- *Ed Sheeran - Perfect (Live Performance at Wembley Stadium)*
 - *Rainbow Bap (Remix) (Official Visualizer)*
 
 ## 🎮 Cluster 2: Gaming & Challenges
@@ -104,12 +103,11 @@ This cluster consists of gaming-related content, including gameplay highlights, 
 **Top Keywords:** `sidemen`, `ksi`, `office`, `w2s`, `harry`
 
 **Example Titles:**
-- *Sidemen Play GTA 5 - Chaos Mode Challenge!*
-- *Fortnite Pro Takes on the 1HP Challenge*
-- *FIFA 23 - Impossible Free Kick Goals Compilation*
-- *Minecraft Speedrunner vs 3 Hunters - Can I Survive?*
-- *Call of Duty: Warzone - Clutch Moments & Insane Plays*
-- *Among Us - 200 IQ Plays That Will Shock You*
+- *SIDEMEN UNO CHAOS MODE*
+- *I made Marvel Rivals Game of the Year worthy*
+- *I Played Knock Off's of the most FAMOUS GAMES! (GTA, COD, MINECRAFT, FORTNITE)*
+- *100 Players Simulate THE HUNGER GAMES in Minecraft...v*
+- *Batman Arkham Origins is so much better than I remember*
 
 ## ⚽ Cluster 3: Soccer & Sports Highlights
 
@@ -133,7 +131,6 @@ This cluster primarily consists of content related to housing, real estate, and 
 **Top Keywords:** `nyc`, `apartment`, `tour`, `la`, `penthouse`
 
 **Example Titles:**
-- *TOURING a FUTURISTIC New York Penthouse | NYC APARTMENT TOUR	*
 - *Inside a $75,000,000 OFF MARKET NYC Penthouse | Mansion Tour	*
 - *i toured 14 philly apartments and this is how it went.*
 - *4 Million LA Apartment #shorts #la*
