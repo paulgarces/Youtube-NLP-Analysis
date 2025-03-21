@@ -110,3 +110,18 @@ This cluster consists of gaming-related content, including gameplay highlights, 
 - *Minecraft Speedrunner vs 3 Hunters - Can I Survive?*
 - *Call of Duty: Warzone - Clutch Moments & Insane Plays*
 - *Among Us - 200 IQ Plays That Will Shock You*
+
+## ⚽ Cluster 3: Soccer & Sports Highlights
+
+This cluster is primarily focused on soccer match highlights**, with extensive coverage of Premier League games, UEFA Champions League matches, and international tournaments. It includes full-match recaps, best goals, key player performances, and post-game analysis.
+
+While the majority of content revolves around football (soccer), this cluster also contains highlights from other sports, such as college athletics, proffesional athletics, and key moments from major sporting events. However, **soccer remains the dominant focus, making this cluster particularly useful for fans of club and international football.
+
+**Top Keywords:** `premier league`, `highlights`, `match`, `goals`, `champions league`, `ucl`, `football`
+
+**Example Titles:**
+- *Manchester United vs. Galatasaray: Extended Highlights | UCL Group Stage MD 2 | CBS Sports Golazo*
+- *#1 LSU vs Texas Highlights (Great Game!) | 2023 College Baseball Highlights*
+- *Germany vs Hungary | Highlights | UEFA Nations League*
+- *Top 23 Premier League goals of 2023 | NBC Sports*
+- *Denver Broncos vs. Seattle Seahawks | NFL 2024 Week 1 Game Highlights*
