@@ -113,7 +113,7 @@ This cluster consists of gaming-related content, including gameplay highlights, 
 
 ## ⚽ Cluster 3: Soccer & Sports Highlights
 
-This cluster is primarily focused on soccer match highlights**, with extensive coverage of Premier League games, UEFA Champions League matches, and international tournaments. It includes full-match recaps, best goals, key player performances, and post-game analysis.
+This cluster is primarily focused on soccer match highlights, with extensive coverage of Premier League games, UEFA Champions League matches, and international tournaments. It includes full-match recaps, best goals, key player performances, and post-game analysis.
 
 While the majority of content revolves around football (soccer), this cluster also contains highlights from other sports, such as college athletics, proffesional athletics, and key moments from major sporting events. However, soccer remains the dominant focus, making this cluster particularly useful for fans of club and international football.
 
