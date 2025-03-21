@@ -74,7 +74,7 @@ For each file:
 
 This cluster contains content mainly related to international and domestic sports. It includes a mix of official match highlights, memorable moments, player-centric content, trivia, and challenges. Videos frequently reference global tournaments, popular teams, and famous athletes, as well as educational and entertainment-focused sports content.
 
-**Top Keywords:** `football`, `highlights`, `2022` ,`college` ,`game`, 
+**Top Keywords:** `football`, `highlights`, `2022`,`college` ,`game`, 
 
 **Example Titles:**
 - *£500 Jabulani v £150 Brazuca v £100 Telstar | World Cup Ball Battle*  
@@ -82,3 +82,17 @@ This cluster contains content mainly related to international and domestic sport
 - *Michigan State vs. USC - First Round NCAA tournament extended highlights*  
 - *All Sports Golf Battle 3 | Dude Perfect*  
 - *Greatest American Sports Moments of the Decade [2010-2019]*
+
+## 🎵 Cluster 1: Music Videos & Lyrics
+
+This cluster primarily consists of music-related content**, including official music videos, lyric videos, live performances, and remixes. It features a variety of genres, artists, and collaborations, often tagged with terms like "official video", "ft." (featuring), "lyrics", and "remix". The content also includes trending songs, new releases, and live concerts.
+
+**Top Keywords:** `video`, `ft`, `music`, `audio`, `feat`
+
+**Example Titles:**
+- *Adele - Someone Like You (Official Music Video)*
+- *PUBLIC - Make You Mine (Official Lyric Video)*
+- *TMac Miller - My Favorite Part (feat. Ariana Grande) (Live)*
+- *The Weeknd ft. Ariana Grande - Save Your Tears (Remix)*
+- *Ed Sheeran - Perfect (Live Performance at Wembley Stadium)*
+- *Rainbow Bap (Remix) (Official Visualizer)*
