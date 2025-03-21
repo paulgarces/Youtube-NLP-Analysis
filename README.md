@@ -53,6 +53,13 @@ To help cluster certain niche categories better, a **keyword boosting** method w
 
 Each cluster, a total of six, is saved in its own CSV file inside the `ClustersDataFrame/` folder.
 
+Cluster 0: `GlobalSportsCoverage.csv`
+Cluster 1: `MusicVideosLyrics.csv`
+Cluster 2: `GamingChallenges.csv`
+Cluster 3: `SoccerSportHighlights.csv`
+Cluster 4: `HousingRealEstate.csv`
+Cluster 5: `MixedMedia.csv`
+
 For each file:
 - `Original_Title`: Raw YouTube title
 - `Cleaned_Title`: Title after cleaning and stopword removal
