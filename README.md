@@ -51,7 +51,7 @@ To help cluster certain niche categories better, a **keyword boosting** method w
 
 ## 📁 Output
 
-Each cluster is saved in its own CSV file inside the `ClustersDataFrame/` folder.
+Each cluster, a total of six, is saved in its own CSV file inside the `ClustersDataFrame/` folder.
 
 For each file:
 - `Original_Title`: Raw YouTube title
@@ -60,3 +60,18 @@ For each file:
 - `Cluster_Name`: Label derived from most common words in the group
 
 ---
+
+## 📑 Cluster Overview
+
+### 🏆 Cluster 0: Global Sports Coverage
+
+This cluster contains content mainly related to international and domestic sports. It includes a mix of official match highlights, memorable moments, player-centric content, trivia, and challenges. Videos frequently reference global tournaments, popular teams, and famous athletes, as well as educational and entertainment-focused sports content.
+
+**Top Keywords:** `football`, `highlights`, `2022` ,`college` ,`game`, 
+
+**Example Titles:**
+- *£500 Jabulani v £150 Brazuca v £100 Telstar | World Cup Ball Battle*  
+- *HE WENT 10/10! PERFECT FOOTBALL KNOWLEDGE ON SHOW 👏 #shorts*  
+- *Michigan State vs. USC - First Round NCAA tournament extended highlights*  
+- *All Sports Golf Battle 3 | Dude Perfect*  
+- *Greatest American Sports Moments of the Decade [2010-2019]*
