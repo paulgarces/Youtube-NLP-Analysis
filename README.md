@@ -4,16 +4,11 @@ This project analyzes and clusters YouTube video titles from your personal watch
 
 ---
 
-### 📂 Code Reference
-
-- The full implementation is located in [`youtube_watch_analysis.py`](youtube_watch_analysis.py), which handles data loading, cleaning, keyword boosting, vectorization, clustering, and CSV generation.
-
----
-
 ## 🔍 Project Overview
 
 - **Data Source:** `watch-history.json` from Google Takeout
 - **Tooling:** Python, Pandas, Gensim (Word2Vec), scikit-learn (KMeans), Regex
+- **Code:** The full implementation is located in [`youtube_watch_analysis.py`](youtube_watch_analysis.py), which handles data loading, cleaning, keyword boosting, vectorization, clustering, and CSV generation.
 - **Goal:** Cluster 31,000+ video titles into meaningful groups based on shared content or topic
 
 ---
