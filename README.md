@@ -92,7 +92,7 @@ This cluster primarily consists of music-related content**, including official m
 **Example Titles:**
 - *Adele - Someone Like You (Official Music Video)*
 - *PUBLIC - Make You Mine (Official Lyric Video)*
-- *TMac Miller - My Favorite Part (feat. Ariana Grande) (Live)*
+- *Mac Miller - My Favorite Part (feat. Ariana Grande) (Live)*
 - *The Weeknd ft. Ariana Grande - Save Your Tears (Remix)*
 - *Rainbow Bap (Remix) (Official Visualizer)*
 
@@ -136,3 +136,16 @@ This cluster primarily consists of content related to housing, real estate, and 
 - *4 Million LA Apartment #shorts #la*
 - *Day in the life in my new NYC apartment!*
 - *How SoHo NYC Became The Cast Iron District | Walking Tour | Architectural Digest*
+
+## 🎬 Cluster 5: Mixed Media & Entertainment Shorts
+
+This cluster includes a broad range of entertainment content. It features a mix of viral videos, technology advancements, gaming highlights, TV show and movie snippets and moments, comedy skits, and reaction-based content. 
+
+**Top Keywords:** `de`, `why`, `sidemen`, `ever`, `out`
+
+**Example Titles:**
+- *How THANOS bullied the INFINTY STONE from THE AVENGERS in Wakanda*
+- *Best LEGO alt Build! #lego #legospeedchampions #legocars #legobuild	*
+- *Loyalty is a two-way street, if I ask you for it, you will receive it from me #suits #shorts*
+- *Tesla Optimus Robot Showcases Advanced Walking on Uneven Terrain*
+- *SIDEMEN REACT TO CONSPIRACY THEORIES THAT BECAME TRUE*
