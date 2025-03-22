@@ -1,5 +1,4 @@
 # 📺 YouTube Watch History Clustering Report
-### Paul Garces - YouTube-NLP-Analysis
 
 This project analyzes and clusters YouTube video titles from your personal watch history using Natural Language Processing (NLP) techniques. The goal is to automatically group similar types of videos—such as music videos, sports highlights, and apartment tours—into thematic clusters based on title content.
 
