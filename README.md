@@ -85,7 +85,7 @@ This cluster contains content mainly related to international and domestic sport
 
 ## 🎵 Cluster 1: Music Videos & Lyrics
 
-This cluster primarily consists of music-related content**, including official music videos, lyric videos, live performances, and remixes. It features a variety of genres, artists, and collaborations, often tagged with terms like "official video", "ft." (featuring), "lyrics", and "remix". The content also includes trending songs, new releases, and live concerts.
+This cluster primarily consists of music-related content, including official music videos, lyric videos, live performances, and remixes. It features a variety of genres, artists, and collaborations, often tagged with terms like "official video", "ft." (featuring), "lyrics", and "remix". The content also includes trending songs, new releases, and live concerts.
 
 **Top Keywords:** `video`, `ft`, `music`, `audio`, `feat`
 
@@ -131,7 +131,7 @@ This cluster primarily consists of content related to housing, real estate, and 
 **Top Keywords:** `nyc`, `apartment`, `tour`, `la`, `penthouse`
 
 **Example Titles:**
-- *Inside a $75,000,000 OFF MARKET NYC Penthouse | Mansion Tour	*
+- *Inside a $75,000,000 OFF MARKET NYC Penthouse | Mansion Tour*
 - *i toured 14 philly apartments and this is how it went.*
 - *4 Million LA Apartment #shorts #la*
 - *Day in the life in my new NYC apartment!*
@@ -145,7 +145,7 @@ This cluster includes a broad range of entertainment content. It features a mix 
 
 **Example Titles:**
 - *How THANOS bullied the INFINTY STONE from THE AVENGERS in Wakanda*
-- *Best LEGO alt Build! #lego #legospeedchampions #legocars #legobuild	*
+- *Best LEGO alt Build! #lego #legospeedchampions #legocars #legobuild*
 - *Loyalty is a two-way street, if I ask you for it, you will receive it from me #suits #shorts*
 - *Tesla Optimus Robot Showcases Advanced Walking on Uneven Terrain*
 - *SIDEMEN REACT TO CONSPIRACY THEORIES THAT BECAME TRUE*
