@@ -1,10 +1,10 @@
-# 📺 YouTube Watch History Clustering Report
+# YouTube Watch History Clustering Report
 
 This project analyzes and clusters YouTube video titles from your personal watch history using Natural Language Processing (NLP) techniques. The goal is to automatically group similar types of videos—such as music videos, sports highlights, and apartment tours—into thematic clusters based on title content.
 
 ---
 
-## 🔍 Project Overview
+## Project Overview
 
 - **Data Source:** `watch-history.json` from Google Takeout
 - **Tooling:** Python, Pandas, Gensim (Word2Vec), scikit-learn (KMeans), Regex
@@ -13,9 +13,9 @@ This project analyzes and clusters YouTube video titles from your personal watch
 
 ---
 
-## 🧠 Methodology
+## Methodology
 
-### 🧼 1. Data Cleaning
+### 1. Data Cleaning
 - Removed irrelevant records such as:
   - YouTube TV entries
   - Sponsored ads (`"From Google Ads"`)
@@ -24,7 +24,7 @@ This project analyzes and clusters YouTube video titles from your personal watch
 
 ---
 
-### 🎯 2. Keyword Boosting
+### 2. Keyword Boosting
 To help cluster certain niche categories better, a **keyword boosting** method was used:
 - If a title contains **2 or more** keywords from a category, that category's label is repeated 3 times in the title for extra weight.
 
@@ -36,20 +36,20 @@ To help cluster certain niche categories better, a **keyword boosting** method w
 
 ---
 
-### 💬 3. Word Embeddings (Word2Vec)
+### 3. Word Embeddings (Word2Vec)
 - Tokenized all boosted titles into word lists
 - Trained a **Word2Vec** model to represent each title as the **average vector of its words**
 
 ---
 
-### 📊 4. Clustering (KMeans)
+### 4. Clustering (Using KMeans)
 - Normalized vectors using `StandardScaler`
 - Applied **KMeans clustering** with `n_clusters = 6` to group similar titles
 - Each cluster was labeled using the **top 5 most frequent words** found in the cleaned titles of that group
 
 ---
 
-## 📁 Output
+## Output
 
 Each cluster, a total of six, is saved in its own CSV file inside the `ClustersDataFrame/` folder.
 
@@ -68,9 +68,9 @@ For each file:
 
 ---
 
-## 📑 Cluster Overview
+## Cluster Overview
 
-### 🏆 Cluster 0: Global Sports Coverage
+### Cluster 0: Global Sports Coverage
 
 This cluster contains content mainly related to international and domestic sports. It includes a mix of official match highlights, memorable moments, player-centric content, trivia, and challenges. Videos frequently reference global tournaments, popular teams, and famous athletes, as well as educational and entertainment-focused sports content.
 
@@ -83,7 +83,7 @@ This cluster contains content mainly related to international and domestic sport
 - *All Sports Golf Battle 3 | Dude Perfect*  
 - *Greatest American Sports Moments of the Decade [2010-2019]*
 
-## 🎵 Cluster 1: Music Videos & Lyrics
+## Cluster 1: Music Videos & Lyrics
 
 This cluster primarily consists of music-related content, including official music videos, lyric videos, live performances, and remixes. It features a variety of genres, artists, and collaborations, often tagged with terms like "official video", "ft." (featuring), "lyrics", and "remix". The content also includes trending songs, new releases, and live concerts.
 
@@ -96,7 +96,7 @@ This cluster primarily consists of music-related content, including official mus
 - *The Weeknd ft. Ariana Grande - Save Your Tears (Remix)*
 - *Rainbow Bap (Remix) (Official Visualizer)*
 
-## 🎮 Cluster 2: Gaming & Challenges
+## Cluster 2: Gaming & Challenges
 
 This cluster consists of gaming-related content, including gameplay highlights, challenges, esports competitions, and gaming-related discussions. The content spans across different gaming genres, featuring popular games, player-versus-player (PvP) matches, and reaction-based gaming moments. Many of these videos include challenges, speedruns, or collaborations between popular gaming creators.
 
@@ -109,7 +109,7 @@ This cluster consists of gaming-related content, including gameplay highlights, 
 - *100 Players Simulate THE HUNGER GAMES in Minecraft...v*
 - *Batman Arkham Origins is so much better than I remember*
 
-## ⚽ Cluster 3: Soccer & Sports Highlights
+## Cluster 3: Soccer & Sports Highlights
 
 This cluster is primarily focused on soccer match highlights, with extensive coverage of Premier League games, UEFA Champions League matches, and international tournaments. It includes full-match recaps, best goals, key player performances, and post-game analysis.
 
@@ -124,7 +124,7 @@ While the majority of content revolves around football (soccer), this cluster al
 - *Top 23 Premier League goals of 2023 | NBC Sports*
 - *Denver Broncos vs. Seattle Seahawks | NFL 2024 Week 1 Game Highlights*
 
-## 🏡 Cluster 4: Housing & Real Estate
+## Cluster 4: Housing & Real Estate
 
 This cluster primarily consists of content related to housing, real estate, and apartment tours. Many of these videos feature apartment tours in major metropolitan areas such as New York City (NYC) and Los Angeles (LA), and Philadelphia, highlighting modern interiors, pricing comparisons, and unique architectural designs.
 
@@ -137,7 +137,7 @@ This cluster primarily consists of content related to housing, real estate, and 
 - *Day in the life in my new NYC apartment!*
 - *How SoHo NYC Became The Cast Iron District | Walking Tour | Architectural Digest*
 
-## 🎬 Cluster 5: Mixed Media & Entertainment Shorts
+## Cluster 5: Mixed Media & Entertainment Shorts
 
 This cluster includes a broad range of entertainment content. It features a mix of viral videos, technology advancements, gaming highlights, TV show and movie snippets and moments, comedy skits, and reaction-based content. 
 
