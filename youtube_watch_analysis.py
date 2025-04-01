@@ -1,5 +1,6 @@
 # Paul Garces - YouTube Watch History Analysis
 # This .py script reads the watch history from a JSON file and performs clustering on the video titles
+# IMPORTANT: Rerunning this script will result in different clustering outcomes!!!!
 
 # downloading/importing the libraries that are needed
 import json
@@ -34,7 +35,9 @@ custom_stopwords = {
     "nbc", "cup", "world"
 }
 
-
+# these lists include words that are related to the specific content that will in a way help indicate or point a video title
+# to a certain category/cluster. basically the purpose of these is to help identifty clusters more effectively
+# these will be used in the boosting section of the code which is pretty important
 music_keywords = {
     "music", "video", "ft", "feat", "featuring", "audio", "lyrics", "remix", 
     "song", "album", "official", "live", "dance", "choreography", "mv"
@@ -48,6 +51,7 @@ apartment_keywords = {
     "apartment", "tour", "nyc", "manhattan", "penthouse", "house", "home"
 }
 
+# just starting an empty list to store the original video titles, the cleaned titles and then the boosted titles
 original_titles = []
 cleaned_titles = []
 boosted_titles = []
@@ -71,14 +75,18 @@ for entry in data:
 # this is cleaning the title and getting rid of punctuation, then puts it into lowercase, and then removes words from the custom_stopwords list    
     title_cleaned = " ".join([word.lower() for word in re.sub(r"[^a-zA-Z0-9 ]", "", title).split()
                               if word.lower() not in custom_stopwords])
-    cleaned_titles.append(title_cleaned)
+    cleaned_titles.append(title_cleaned) # adding it to the empty cleaned_titles list
     
     title_lower = title.lower()
 
-# this whole section is...
-    boosted_title = title_cleaned
+# this whole section is the actual boosting based on themes which will use the keywords from above
+    boosted_title = title_cleaned # using the cleaned title as the base for this process
     
-    # for example if a title is heavily music related, this line adds "MUSICCATEGORY" multiple times to emphasize that for the Word2Vec model
+    # for example, in the music case, we're getting the sum/total of the number of times that a word from the music_keywords list appears in the 
+    # lower cased version of our video title.
+    # if there are two or more keywords in the title, then we add MUSICCATEGORY x3 to the title, which helps...
+    # word2vec "know" that the title is strongly related to music (this will also help with further clustering)
+    # same thing goes for the other two parts after. these are also known as category markers
     music_count = sum(1 for keyword in music_keywords if keyword in title_lower)
     if music_count >= 2:
         boosted_title += " MUSICCATEGORY MUSICCATEGORY MUSICCATEGORY"
@@ -91,34 +99,49 @@ for entry in data:
     if apartment_count >= 2:
         boosted_title += " APARTMENTCATEGORY APARTMENTCATEGORY APARTMENTCATEGORY"
     
-    boosted_titles.append(boosted_title)
+    boosted_titles.append(boosted_title) # after the process of finding keywords in titles is done, if two or more keywords found in title...
+    # the new title in the boosted_title would look like "VIDEO TITLE MUSICCATEGORY MUSICCATEGORY MUSICCATEGORY"
+    # if the titles aren't boosted, they're still stored here for the later vectorization process
+    # both boosted un-boosted titles will follow the same process/pipeline below
 
-# making a copy of the titles to boost it with the category markers that are above
 print(f"Total valid videos: {len(original_titles)}")
 
+# here each title is split into a list which will help word2vec process each word seperately 
 titles_tokenized = [title.split() for title in boosted_titles]
 
+# here the word2vec model is being created where the titles are the input, there is a vector size of 100 meaning that each word is
+# represented as a 100 dimensional vector, the window of 5 is the max distance between predicted and current word in sentence for training,
+# words must appear once to be considered in the model, and the number of worker threads if four to train the model
 word2vec_model = Word2Vec(sentences=titles_tokenized, vector_size=100, window=5, min_count=1, workers=4)
 
+# in this section...
 title_vectors = []
 for title in titles_tokenized:
     vectors = [word2vec_model.wv[word] for word in title if word in word2vec_model.wv]
     avg_vector = sum(vectors) / len(vectors) if vectors else [0] * 100
     title_vectors.append(avg_vector)
+# we're extracting word2vec vectors for its words and computing the average vector. If there's no words
+# in the word2vec vocab, then we're using a vector of 0
 
+# here we're normalizing the title vectors with standard scaling which is where we subtract the mean and sacling the "unit varianced"
+# this is pretty standard in all ML models and preprocessing
 scaler = StandardScaler()
 X = scaler.fit_transform(title_vectors)
 
+# now actually applying Kmeans to the normalized vectors to create 6 clusters, where the titles are now grouped
+# based on how similar the vectors are. 
 num_clusters = 6
 kmeans = KMeans(n_clusters=num_clusters, random_state=42, init="k-means++", n_init=10)
 clusters = kmeans.fit_predict(X)
 
+# creating a dataframe with the original title, the cleaned title, and then which number cluster number it was assigned to
 dataframe = pd.DataFrame({
     "Original_Title": original_titles,
     "Cleaned_Title": cleaned_titles,
     "Cluster": clusters
 })
 
+# here we're just getting the most common name in each cluster so we can get a sense of what topics the videos are about or related to and grouped by
 cluster_labels = {}
 for cluster_num in range(num_clusters):
     cluster_titles = dataframe[dataframe["Cluster"] == cluster_num]["Cleaned_Title"].tolist()
@@ -129,6 +152,7 @@ for cluster_num in range(num_clusters):
 
 dataframe["Cluster_Name"] = dataframe["Cluster"].map(cluster_labels)
 
+# the rest of this is just creating the csv's and exporting them which can be found in the ClusterDataFrame folder
 print("\n### Cluster Names ###\n")
 for cluster, label in cluster_labels.items():
     count = len(dataframe[dataframe["Cluster"] == cluster])
